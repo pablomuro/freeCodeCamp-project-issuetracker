@@ -10,7 +10,7 @@ const connect = async function () {
     console.log("could not connect");
   }
   const connection = mongoose.connection;
-  console.log(connection.readyState)
+  mongoose.Promise = global.Promise;
 }
 
 exports.connect = connect

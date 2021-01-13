@@ -21,11 +21,13 @@ const IssueSchema = new Schema({
   },
   assigned_to: {
     type: String,
-    required: false
+    required: false,
+    default: ''
   },
   status_text: {
     type: String,
-    required: false
+    required: false,
+    default: ''
   },
   open: {
     type: Boolean,

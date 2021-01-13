@@ -8,7 +8,7 @@ const errorObject = {
 
 const Issue = require("../db/IssueModel");
 
-const today = new Date();
+
 module.exports = function (app) {
   app
     .route("/api/issues/:project")
@@ -41,12 +41,20 @@ module.exports = function (app) {
       const body = req.body
       const issue = new Issue(body);
       if (issue.validateSync()) {
-        res.json(errorObject);
+        res.json(errorObject.validate);
         return;
       }
 
-      const new_issue = await issue.save();
-      res.json(new_issue)
+      try {
+        let newIssue = await issue.save();
+        res.json(newIssue)
+        return
+      } catch (error) {
+        res.json(error);
+        return;
+      }
+
+
     })
 
     .put(async function (req, res) {
@@ -60,7 +68,6 @@ module.exports = function (app) {
         const [key, value] = [...obj]
         if (value) { updateFields[key] = value }
       })
-      console.log(updateFields)
       if (!_id) {
         res.json(errorObject.missingId)
         return
@@ -71,7 +78,9 @@ module.exports = function (app) {
       }
 
       try {
-        await Issue.findByIdAndUpdate(_id, body).exec()
+        const updatedIssue = await Issue.findByIdAndUpdate(_id, body, { new: true }).exec()
+        res.json(updatedIssue)
+        return
       } catch (error) {
         res.json({ error: 'could not update', '_id': _id })
         return
@@ -88,12 +97,10 @@ module.exports = function (app) {
       }
       try {
         await Issue.findByIdAndDelete(_id).exec()
+        res.json({ result: 'successfully deleted', '_id': _id })
       } catch (error) {
         res.json({ error: 'could not delete', '_id': _id })
         return
       }
-
-
-      res.json({ result: 'successfully deleted', '_id': _id })
     });
 };
