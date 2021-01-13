@@ -157,7 +157,7 @@ suite('Functional Tests', function () {
           assert.isObject(res.body)
           assert.exists(res.body._id)
           assert.equal(res.body._id, testId)
-          assert.equal(res.body.status_text, "In QA PUT UPDATE")
+          assert.equal(res.body.result, "successfully updated")
           done();
         });
     });
@@ -171,8 +171,7 @@ suite('Functional Tests', function () {
           assert.isObject(res.body)
           assert.exists(res.body._id)
           assert.equal(res.body._id, testId)
-          assert.equal(res.body.created_by, "Joe PUT UPDATE")
-          assert.equal(res.body.status_text, "In QA PUT UPDATE")
+          assert.equal(res.body.result, "successfully updated")
           done();
         });
     });
