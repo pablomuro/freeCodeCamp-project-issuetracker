@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "\"mocha --timeout 5000 --recursive --exit --ui tdd tests/\"",
+    "test": "node_modules/.bin/mocha --timeout 5000 --recursive --exit --ui tdd tests/",
     "dev": "nodemon --inspect server.js"
   },
   "dependencies": {
