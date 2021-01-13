@@ -78,8 +78,9 @@ module.exports = function (app) {
       }
 
       try {
-        const updatedIssue = await Issue.findByIdAndUpdate(_id, body, { new: true }).exec()
-        res.json(updatedIssue)
+        await Issue.findByIdAndUpdate(_id, body, { new: true }).exec()
+        // res.json(updatedIssue)
+        res.json({ result: 'successfully updated', '_id': _id })
         return
       } catch (error) {
         res.json({ error: 'could not update', '_id': _id })
