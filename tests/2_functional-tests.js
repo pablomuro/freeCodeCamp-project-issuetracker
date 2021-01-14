@@ -4,7 +4,6 @@ const assert = chai.assert;
 const server = require('../server');
 const mongoose = require("mongoose")
 const Issue = require("../db/IssueModel");
-const { query } = require('express');
 
 chai.use(chaiHttp);
 
@@ -17,7 +16,8 @@ suite('Functional Tests', function () {
     created_by: "Joe",
     assigned_to: "Joe",
     open: true,
-    status_text: "In QA"
+    status_text: "In QA",
+    project: "apitest"
   }
   const issueRequiredFields = {
     issue_title: "Fix error in posting data",
@@ -80,6 +80,7 @@ suite('Functional Tests', function () {
   });
 
   suite('GET Route tests', function () {
+    // const projectName = 'apitest'
     setup((done) => {
       const newIssue = new Issue(issueAllFields);
       newIssue.save((error, issue) => {
@@ -96,7 +97,7 @@ suite('Functional Tests', function () {
 
     test('View issues on a project: GET request to /api/issues/{project}', function (done) {
       chai.request(server)
-        .get('/api/issues/apitest')
+        .get('/api/issues/apitest/')
         .end(function (err, res) {
           assert.equal(res.status, 200);
           assert.isArray(res.body)
@@ -107,7 +108,7 @@ suite('Functional Tests', function () {
 
     test('View issues on a project with one filter: GET request to /api/issues/{project}', function (done) {
       chai.request(server)
-        .get('/api/issues/apitest')
+        .get('/api/issues/apitest/')
         .query({ assigned_to: "Joe", })
         .end(function (err, res) {
           assert.equal(res.status, 200);
@@ -119,7 +120,7 @@ suite('Functional Tests', function () {
 
     test('View issues on a project with multiple filters: GET request to /api/issues/{project}', function (done) {
       chai.request(server)
-        .get('/api/issues/apitest')
+        .get('/api/issues/apitest/')
         .query({ assigned_to: "Joe", issue_title: "Fix error in posting data" })
         .end(function (err, res) {
           assert.equal(res.status, 200);
@@ -213,12 +214,12 @@ suite('Functional Tests', function () {
   });
 
   suite('DELETE Route tests', function () {
-    let testId;
+    let itemToDelete;
     setup((done) => {
       const newIssue = new Issue(issueAllFields);
       newIssue.save((error, issue) => {
         if (error) console.log(error)
-        testId = issue._id
+        itemToDelete = issue
         done();
       })
     });
@@ -232,13 +233,14 @@ suite('Functional Tests', function () {
     test('Delete an issue: DELETE request to /api/issues/{project}', function (done) {
       chai.request(server)
         .delete('/api/issues/apitest')
-        .send({ _id: testId })
+        .send({ _id: itemToDelete._id })
         .end(function (err, res) {
           assert.equal(res.status, 200);
           assert.isObject(res.body)
-          assert.exists(res.body._id)
-          assert.equal(res.body._id, testId)
-          assert.equal(res.body.result, "successfully deleted")
+          assert.deepEqual(res.body, {
+            result: 'successfully deleted',
+            _id: itemToDelete._id.toString()
+          });
           done();
         });
     });
@@ -250,8 +252,11 @@ suite('Functional Tests', function () {
         .send({ _id: 'testId' })
         .end(function (err, res) {
           assert.equal(res.status, 200);
-          assert.equal(res.body.error, 'could not delete')
-          assert.equal(res.body._id, 'testId')
+          assert.isObject(res.body)
+          assert.deepEqual(res.body, {
+            error: 'could not delete',
+            _id: 'testId'
+          });
           done();
         });
     });
@@ -259,11 +264,10 @@ suite('Functional Tests', function () {
     test('Delete an issue with missing _id: DELETE request to /api/issues/{project}', function (done) {
       chai.request(server)
         .delete('/api/issues/apitest')
-        .send({})
+        .send()
         .end(function (err, res) {
           assert.equal(res.status, 200);
-          assert.equal(res.body.error, 'missing _id')
-
+          assert.deepEqual(res.body, { error: 'missing _id' });
           done();
         });
     });
